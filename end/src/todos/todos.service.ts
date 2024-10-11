@@ -10,12 +10,24 @@ export class TodosService {
     private todosRepository: Repository<Todo>,
   ) {}
 
-  async create(title: string, description: string): Promise<Todo> {
-    const todo = this.todosRepository.create({ title, description });
+  findAll(): Promise<Todo[]> {
+    return this.todosRepository.find();
+  }
+
+  findOne(id: number): Promise<Todo> {
+    return this.todosRepository.findOneBy({ id });
+  }
+
+  create(todo: Todo): Promise<Todo> {
     return this.todosRepository.save(todo);
   }
 
-  async findAll(): Promise<Todo[]> {
-    return this.todosRepository.find();
+  async update(id: number, todo: Partial<Todo>): Promise<Todo> {
+    await this.todosRepository.update(id, todo);
+    return this.findOne(id);
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.todosRepository.delete(id);
   }
 }
