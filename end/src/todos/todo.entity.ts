@@ -5,12 +5,15 @@ export class Todo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ length: 100 })
   title: string;
 
-  @Column()
+  @Column({ length: 255 })
   description: string;
 
-  @Column({ default: false })
-  completed: boolean;
+  @Column()
+  time: Date;
+
+  @Column({ default: 'pending' })
+  status: string;
 }

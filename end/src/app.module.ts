@@ -16,6 +16,10 @@ import { TodosModule } from './todos/todos.module';
       database: process.env.POSTGRES_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // Automatically sync schema with database
+      logging: true, // Enable logging for queries
+      extra: {
+        max: 10, // Maximum number of connections in the pool
+      },
     }),
     UsersModule,
     TodosModule,
