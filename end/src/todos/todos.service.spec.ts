@@ -1,43 +1,66 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TodosService } from './todos.service';
-import { Todo } from './todo.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Todo } from './todo.entity';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 
 describe('TodosService', () => {
   let service: TodosService;
-  let todosRepository: Repository<Todo>;
+  let mockTodoRepository: Partial<Repository<Todo>>;
 
-  const mockQueryBuilder = {
+  // Mocking createQueryBuilder for pagination and filtering
+  const mockQueryBuilder: Partial<SelectQueryBuilder<Todo>> = {
     where: jest.fn().mockReturnThis(),
-    andWhere: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
-    getMany: jest.fn().mockResolvedValue([]), // Mock return value for getMany
-  };
-
-  const mockTodosRepository = {
-    createQueryBuilder: jest.fn(() => mockQueryBuilder), // Mock createQueryBuilder method
+    getMany: jest.fn(),
   };
 
   beforeEach(async () => {
+    mockTodoRepository = {
+      createQueryBuilder: jest.fn(() => mockQueryBuilder as SelectQueryBuilder<Todo>), // Cast the mock to SelectQueryBuilder<Todo>
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TodosService,
         {
           provide: getRepositoryToken(Todo),
-          useValue: mockTodosRepository, // Use the mock repository
+          useValue: mockTodoRepository, // Mocking the repository
         },
       ],
     }).compile();
 
     service = module.get<TodosService>(TodosService);
-    todosRepository = module.get<Repository<Todo>>(getRepositoryToken(Todo));
   });
 
-  it('should return an empty array', async () => {
-    const result = await service.findAll();
-    expect(todosRepository.createQueryBuilder).toHaveBeenCalledWith('todo');
-    expect(result).toEqual([]); // Since we mock getMany() to return an empty array
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  it('should return todos with pagination', async () => {
+    const mockTodos = [
+      { id: 1, title: 'Todo 1', description: 'Description 1', status: 'pending', time: new Date() },
+      { id: 2, title: 'Todo 2', description: 'Description 2', status: 'pending', time: new Date() },
+    ];
+
+    (mockQueryBuilder.getMany as jest.Mock).mockResolvedValue(mockTodos); // Mock return value for getMany
+
+    const result = await service.findAll(1, 2); // page 1, limit 2
+    expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0); // page 1 skips 0 items
+    expect(mockQueryBuilder.take).toHaveBeenCalledWith(2); // takes 2 items
+    expect(result).toEqual(mockTodos); // Expect the result to match the mocked todos
+  });
+
+  it('should filter todos by status', async () => {
+    const mockTodos = [
+      { id: 1, title: 'Todo 1', description: 'Description 1', status: 'completed', time: new Date() },
+    ];
+
+    (mockQueryBuilder.getMany as jest.Mock).mockResolvedValue(mockTodos);
+
+    const result = await service.findAll(1, 2, 'completed');
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith('todo.status = :status', { status: 'completed' });
+    expect(result).toEqual(mockTodos);
   });
 });
