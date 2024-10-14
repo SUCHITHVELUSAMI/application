@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Todo } from './todo.entity';
@@ -10,32 +10,33 @@ export class TodosService {
     private todosRepository: Repository<Todo>,
   ) {}
 
-  async findAll(): Promise<Todo[]> {
-    return this.todosRepository.find();
-  }
+  // Find all todos with pagination and filtering
+  async findAll(page: number = 1, limit: number = 10, status?: string): Promise<Todo[]> {
+    const query = this.todosRepository.createQueryBuilder('todo');
 
-  async findOne(id: number): Promise<Todo> {
-    const todo = await this.todosRepository.findOneBy({ id });
-    if (!todo) {
-      throw new NotFoundException(`Todo with ID ${id} not found`);
+    if (status) {
+      query.where('todo.status = :status', { status });
     }
-    return todo;
+
+    query.skip((page - 1) * limit).take(limit);
+
+    return await query.getMany();
   }
 
-  async create(todo: Todo): Promise<Todo> {
+  findOne(id: number): Promise<Todo> {
+    return this.todosRepository.findOneBy({ id });
+  }
+
+  create(todo: Todo): Promise<Todo> {
     return this.todosRepository.save(todo);
   }
 
   async update(id: number, todo: Partial<Todo>): Promise<Todo> {
     await this.todosRepository.update(id, todo);
-    const updatedTodo = await this.findOne(id);
-    return updatedTodo;
+    return this.findOne(id);
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.todosRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Todo with ID ${id} not found`);
-    }
+    await this.todosRepository.delete(id);
   }
 }
