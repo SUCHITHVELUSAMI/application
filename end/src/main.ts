@@ -1,15 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { LoggingMiddleware } from './middleware/logging.middleware'; // Import the middleware
 import { HttpExceptionFilter } from './filters/http-exception.filter'; // Import your exception filter
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
+  // Apply the middleware globally
+  app.use(new LoggingMiddleware().use);
+
   // Apply the exception filter globally
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  // Set up Swagger for API documentation
   const config = new DocumentBuilder()
     .setTitle('Todo API')
     .setDescription('API for managing todos')
@@ -19,8 +22,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  // Start the application on port 3000
   await app.listen(3000);
 }
-
 bootstrap();

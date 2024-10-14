@@ -1,28 +1,31 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggingMiddleware } from './middleware/logging.middleware'; // Import the middleware
 import { UsersModule } from './users/users.module';
 import { TodosModule } from './todos/todos.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // Load .env globally
+    ConfigModule.forRoot({ isGlobal: true }), // Load environment variables globally
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.POSTGRES_HOST,
-      port: parseInt(process.env.POSTGRES_PORT, 10),
-      username: process.env.POSTGRES_USERNAME,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DATABASE,
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Automatically sync schema with database
-      logging: true, // Enable logging for queries
-      extra: {
-        max: 10, // Maximum number of connections in the pool
-      },
+      type: 'postgres', // Database type
+      host: process.env.POSTGRES_HOST, // Host from environment variables
+      port: parseInt(process.env.POSTGRES_PORT, 10), // Port from environment variables
+      username: process.env.POSTGRES_USERNAME, // Username from environment variables
+      password: process.env.POSTGRES_PASSWORD, // Password from environment variables
+      database: process.env.POSTGRES_DATABASE, // Database name from environment variables
+      entities: [__dirname + '/**/*.entity{.ts,.js}'], // Load entity files
+      synchronize: true, // Automatically synchronize the database schema
     }),
-    UsersModule,
-    TodosModule,
+    UsersModule, // Users module
+    TodosModule, // Todos module
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggingMiddleware) // Apply the LoggingMiddleware
+      .forRoutes('*'); // Apply to all routes
+  }
+}
