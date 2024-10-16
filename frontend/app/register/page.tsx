@@ -1,14 +1,13 @@
 "use client";  // Mark this as a Client Component
 
-import { useForm } from 'react-hook-form';  // Ensure correct import
+import { useForm } from 'react-hook-form';
 import { registerUser } from '../../services/api';  // Import the API service
 
 const RegisterPage = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();  // Initialize the form
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
   const onSubmit = async (data: any) => {
     try {
-      // Call the API function to register a new user
       const response = await registerUser(data);
       console.log('User registered successfully:', response);
     } catch (error) {

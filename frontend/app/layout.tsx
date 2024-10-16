@@ -1,4 +1,4 @@
-"use client";  // Mark this component as a Client Component
+"use client";  // Mark this as a Client Component
 
 import React from 'react';
 import { useRouter } from 'next/navigation';  // Correct for App Router

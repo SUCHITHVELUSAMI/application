@@ -2,23 +2,18 @@
 
 import { useForm } from 'react-hook-form';
 import { loginUser } from '../../services/api';  // Import the API service
-import { useRouter } from 'next/navigation';  // Correct import for App Router navigation
+import { useRouter } from 'next/navigation';  // Correct for App Router
 
 const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const router = useRouter();  // Correct usage for navigation in App Router
+  const router = useRouter();
 
   const onSubmit = async (data: any) => {
     try {
-      // Call the API function to log in the user
       const response = await loginUser(data);
-
-      // Store the JWT token in localStorage
       localStorage.setItem('token', response.data.token);
-
       console.log('User logged in successfully:', response);
-      // Redirect to the todos page after successful login
-      router.push('/todos');
+      router.push('/todos');  // Redirect to the todos page
     } catch (error) {
       console.error('Login failed:', error);
     }

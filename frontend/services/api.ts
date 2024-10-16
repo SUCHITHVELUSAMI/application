@@ -1,36 +1,46 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api';  // Adjust the URL to match your backend
+const API_URL = process.env.NEXT_PUBLIC_API_URL;  // Fetch from environment variable
 
 // Helper function to get the token from localStorage
 const getToken = () => {
   return localStorage.getItem('token');
 };
 
-// Register a new user
-export const registerUser = async (data: any) => {
-  return axios.post(`${API_URL}/register`, data);
+// Utility function to handle API calls with error handling
+const apiCall = async (method, url, data = null) => {
+  try {
+    const token = getToken();
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await axios({
+      method,
+      url: `${API_URL}${url}`,
+      data,
+      headers,
+    });
+    return response.data;  // Return the response data
+  } catch (error) {
+    console.error('API call failed:', error);
+    throw error;  // Rethrow the error for handling in components
+  }
 };
+
+// Register a new user
+export const registerUser = (data) => apiCall('POST', '/register', data);
 
 // Login user
-export const loginUser = async (data: any) => {
-  return axios.post(`${API_URL}/login`, data);
-};
+export const loginUser = (data) => apiCall('POST', '/login', data);
 
 // Create a new todo (with token)
-export const createTodo = async (data: any) => {
-  const token = getToken();
-  return axios.post(`${API_URL}/todos`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`  // Include token in the request header
-    }
-  });
-};
+export const createTodo = (data) => apiCall('POST', '/todos', data);
 
 // Fetch all todos (with token)
-export const fetchTodos = async () => {
-  const token = getToken();
-  return axios.get(`${API_URL}/todos`, {
+export const fetchTodos = () => apiCall('GET', '/todos');
+
+// Fetch todo by ID
+export const fetchTodoById = async (id: string) => {
+  const token = getToken();  // Get the token from localStorage
+  return axios.get(`${API_URL}/todos/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`  // Include token in the request header
     }
@@ -38,11 +48,4 @@ export const fetchTodos = async () => {
 };
 
 // Update todo status (with token)
-export const updateTodoStatus = async (id: string, status: string) => {
-  const token = getToken();
-  return axios.put(`${API_URL}/todos/${id}`, { status }, {
-    headers: {
-      Authorization: `Bearer ${token}`  // Include token in the request header
-    }
-  });
-};
+export const updateTodoStatus = (id, status) => apiCall('PUT', `/todos/${id}`, { status });
