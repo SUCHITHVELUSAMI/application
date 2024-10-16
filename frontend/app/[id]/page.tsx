@@ -1,8 +1,9 @@
-import { useRouter } from 'next/router';
+"use client";  // Mark this component as a Client Component
+
+import { useParams } from 'next/navigation';  // Correct hook for accessing dynamic params
 
 const TodoDetail = () => {
-  const router = useRouter();
-  const { id } = router.query;
+  const { id } = useParams();  // Retrieve the `id` from the dynamic route
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

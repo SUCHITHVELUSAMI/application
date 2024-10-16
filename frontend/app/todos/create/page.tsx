@@ -1,25 +1,42 @@
+import { useForm } from 'react-hook-form';
+import { createTodo } from '../../../services/api';  // Import the API service
+
 const CreateTodoPage = () => {
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      // Handle create todo logic here (API call)
-    };
-  
-    return (
-      <div>
-        <h1>Create Todo</h1>
-        <form onSubmit={handleSubmit}>
-          <input type="text" placeholder="Name" required />
-          <input type="text" placeholder="Description" required />
-          <input type="time" required />
-          <select name="status">
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-          </select>
-          <button type="submit">Create</button>
-        </form>
-      </div>
-    );
+  const { register, handleSubmit, formState: { errors } } = useForm();
+
+  const onSubmit = async (data: any) => {
+    try {
+      // Call the API function to create a new todo
+      const response = await createTodo(data);
+      console.log('Todo created successfully:', response);
+      // You can redirect the user to the todos page after successful creation
+    } catch (error) {
+      console.error('Failed to create todo:', error);
+    }
   };
-  
-  export default CreateTodoPage;
-  
+
+  return (
+    <div>
+      <h1>Create Todo</h1>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <input {...register("name", { required: "Name is required" })} placeholder="Name" />
+        {errors.name && <p>{errors.name.message}</p>}
+
+        <input {...register("description", { required: "Description is required" })} placeholder="Description" />
+        {errors.description && <p>{errors.description.message}</p>}
+
+        <input type="time" {...register("time", { required: "Time is required" })} />
+        {errors.time && <p>{errors.time.message}</p>}
+
+        <select {...register("status")}>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+
+        <button type="submit">Create</button>
+      </form>
+    </div>
+  );
+};
+
+export default CreateTodoPage;
