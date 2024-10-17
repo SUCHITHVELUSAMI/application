@@ -1,6 +1,6 @@
 "use client";  // Mark this as a Client Component
 
-import { useForm, FieldError } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 interface TodoFormProps {
   initialValues: {
@@ -20,13 +20,13 @@ const TodoForm: React.FC<TodoFormProps> = ({ initialValues, onSubmit }) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <input {...register("name", { required: "Name is required" })} placeholder="Name" />
-      {errors.name && <p>{(errors.name.message as string) || "Error occurred."}</p>}  {/* Cast to string */}
+      {errors.name && <p>{String(errors.name.message) || "Error occurred."}</p>}  {/* Cast to string */}
 
       <input {...register("description", { required: "Description is required" })} placeholder="Description" />
-      {errors.description && <p>{(errors.description.message as string) || "Error occurred."}</p>}  {/* Cast to string */}
+      {errors.description && <p>{String(errors.description.message) || "Error occurred."}</p>}  {/* Cast to string */}
 
       <input type="time" {...register("time", { required: "Time is required" })} />
-      {errors.time && <p>{(errors.time.message as string) || "Error occurred."}</p>}  {/* Cast to string */}
+      {errors.time && <p>{String(errors.time.message) || "Error occurred."}</p>}  {/* Cast to string */}
 
       <select {...register("status")}>
         <option value="In Progress">In Progress</option>

@@ -5,8 +5,14 @@ import { TodosController } from './todos.controller';
 import { Todo } from './todo.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Todo])],
-  providers: [TodosService],
-  controllers: [TodosController],
+  imports: [
+    TypeOrmModule.forFeature([Todo]),  // Import TypeOrm module for the Todo entity
+  ],
+  providers: [
+    TodosService,  // Provide the TodosService for dependency injection
+  ],
+  controllers: [
+    TodosController,  // Register the TodosController for handling requests
+  ],
 })
 export class TodosModule {}

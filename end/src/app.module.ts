@@ -1,7 +1,8 @@
 import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LoggingMiddleware } from './middleware/logging.middleware'; // Import the middleware
+import { JwtModule } from '@nestjs/jwt'; // Import JwtModule
+import { LoggingMiddleware } from './middleware/logging.middleware'; 
 import { UsersModule } from './users/users.module';
 import { TodosModule } from './todos/todos.module';
 
@@ -18,14 +19,18 @@ import { TodosModule } from './todos/todos.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'], // Load entity files
       synchronize: true, // Automatically synchronize the database schema
     }),
-    UsersModule, // Users module
-    TodosModule, // Todos module
+    JwtModule.register({
+      secret: process.env.JWT_SECRET, // Use JWT secret from env variables
+      signOptions: { expiresIn: '1h' }, // Set token expiration time
+    }),
+    UsersModule, // Import Users module
+    TodosModule, // Import Todos module
   ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(LoggingMiddleware) // Apply the LoggingMiddleware
+      .apply(LoggingMiddleware) // Apply LoggingMiddleware
       .forRoutes('*'); // Apply to all routes
   }
 }

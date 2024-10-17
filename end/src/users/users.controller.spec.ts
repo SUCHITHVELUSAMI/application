@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './create-user.dto'; // Ensure this is the correct import
+import { CreateUserDto } from './create-user.dto';
+import { LoginDto } from './login.dto'; // Import your Login DTO
+import { User } from './user.entity';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -9,7 +11,8 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     mockUsersService = {
-      create: jest.fn(), // Mock the create method
+      create: jest.fn(),
+      login: jest.fn(), // Mock the login method
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -17,7 +20,7 @@ describe('UsersController', () => {
       providers: [
         {
           provide: UsersService,
-          useValue: mockUsersService, // Use mocked service
+          useValue: mockUsersService,
         },
       ],
     }).compile();
@@ -25,7 +28,7 @@ describe('UsersController', () => {
     controller = module.get<UsersController>(UsersController);
   });
 
-  it('should create a user', async () => {
+  it('should register a user', async () => {
     const userDto: CreateUserDto = {
       username: 'testuser',
       password: 'testpass',
@@ -36,10 +39,51 @@ describe('UsersController', () => {
       email: 'test@example.com',
     };
 
-    mockUsersService.create.mockResolvedValue(userDto); // Mock the service response
+    mockUsersService.create.mockResolvedValue(userDto);
 
-    const result = await controller.create(userDto); // Pass the userDto as a single object
-    expect(mockUsersService.create).toHaveBeenCalledWith(userDto); // Ensure it's called with the correct object
-    expect(result).toEqual(userDto); // Expect the result to be equal to the mock response
+    const result = await controller.register(userDto);
+    expect(mockUsersService.create).toHaveBeenCalledWith(userDto);
+    expect(result).toEqual(userDto);
+  });
+
+  it('should log in a user', async () => {
+    const loginDto: LoginDto = {
+      username: 'testuser',
+      password: 'testpass',
+    };
+
+    const expectedResponse = { token: 'some-token' }; // Replace with your expected token logic
+    mockUsersService.login.mockResolvedValue(expectedResponse);
+
+    const result = await controller.login(loginDto);
+    expect(mockUsersService.login).toHaveBeenCalledWith(loginDto);
+    expect(result).toEqual(expectedResponse);
+  });
+
+  it('should throw an error when registration fails', async () => {
+    const userDto: CreateUserDto = {
+      username: 'testuser',
+      password: 'testpass',
+      name: 'Test User',
+      mobile: '1234567890',
+      gender: 'male',
+      hobbies: ['hiking'],
+      email: 'test@example.com',
+    };
+
+    mockUsersService.create.mockRejectedValue(new Error('Registration failed'));
+
+    await expect(controller.register(userDto)).rejects.toThrow('Registration failed');
+  });
+
+  it('should throw an error when login fails', async () => {
+    const loginDto: LoginDto = {
+      username: 'wronguser',
+      password: 'wrongpass',
+    };
+
+    mockUsersService.login.mockRejectedValue(new Error('Invalid credentials'));
+
+    await expect(controller.login(loginDto)).rejects.toThrow('Invalid credentials');
   });
 });

@@ -1,16 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from './user.entity'; // Adjust according to your User entity
+import { User } from './user.entity';
+import { JwtService } from '@nestjs/jwt'; // Import JwtService
 
 describe('UsersService', () => {
   let service: UsersService;
 
   const mockUserRepository = {
     find: jest.fn().mockResolvedValue([]),
-    save: jest.fn(),
-    findOne: jest.fn(),
-    remove: jest.fn(),
+    save: jest.fn().mockResolvedValue({ id: 1, username: 'testuser' }),
+    findOne: jest.fn().mockResolvedValue({ id: 1, username: 'testuser', password: 'testpass' }),
+  };
+
+  const mockJwtService = {
+    sign: jest.fn().mockReturnValue('jwt-token'), // Mock sign method
   };
 
   beforeEach(async () => {
@@ -20,6 +24,10 @@ describe('UsersService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
         },
       ],
     }).compile();
@@ -31,5 +39,5 @@ describe('UsersService', () => {
     expect(service).toBeDefined();
   });
 
-  // Add more tests as needed
+  // Add additional tests as needed
 });

@@ -8,7 +8,7 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: any) => {
     try {
-      const response = await registerUser(data);
+      const response = await registerUser(data);  // Ensure this points to the correct API endpoint
       console.log('User registered successfully:', response);
     } catch (error) {
       console.error('Registration failed:', error);

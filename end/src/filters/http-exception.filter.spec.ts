@@ -26,22 +26,24 @@ describe('HttpExceptionFilter', () => {
   } as unknown as ArgumentsHost;
 
   beforeEach(() => {
-    filter = new HttpExceptionFilter(); // Initialize filter
+    filter = new HttpExceptionFilter(); // Initialize the filter before each test
   });
 
   it('should catch an HTTP exception and format the response', () => {
-    const exception = new HttpException('Test error message', 400); // Create an HTTP exception
-    
-    // Call the filter's catch method
+    const exception = new HttpException('Test error message', 400); // Create a test HTTP exception
+
+    // Call the catch method of the filter with the exception and mocked ArgumentsHost
     filter.catch(exception, mockArgumentsHost);
 
-    // Assert that the response methods were called with the expected arguments
-    expect(mockResponse.status).toHaveBeenCalledWith(400); // Check status code
+    // Ensure that the status method of the response was called with the correct status code
+    expect(mockResponse.status).toHaveBeenCalledWith(400);
+
+    // Ensure that the json method of the response was called with the correct response format
     expect(mockResponse.json).toHaveBeenCalledWith({
       statusCode: 400,
-      timestamp: expect.any(String),
-      path: '/test-url',
-      message: 'Test error message',
+      timestamp: expect.any(String), // Ensure the timestamp is present, but allow any string
+      path: '/test-url', // Ensure the correct URL is included
+      message: 'Test error message', // Ensure the correct error message is included
     });
   });
 });
