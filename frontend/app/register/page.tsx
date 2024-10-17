@@ -1,40 +1,54 @@
-"use client";  // Mark this as a Client Component
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-import { useForm } from 'react-hook-form';
-import { registerUser } from '../../services/api';  // Import the API service
+const Register = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-const RegisterPage = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
 
-  const onSubmit = async (data: any) => {
     try {
-      const response = await registerUser(data);  // Ensure this points to the correct API endpoint
-      console.log('User registered successfully:', response);
-    } catch (error) {
-      console.error('Registration failed:', error);
+      await axios.post('http://localhost:3000/auth/register', { email, password });
+      navigate('/login'); // Redirect to login page after successful registration
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Failed to register.';
+      setError(errorMessage);
+      console.error('Error registering:', err);
     }
   };
 
   return (
-    <div>
-      <h1>Register</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("name", { required: "Name is required" })} placeholder="Name" />
-        {errors.name && <p>{errors.name.message}</p>}
-
-        <input {...register("mobile", { required: "Mobile is required" })} placeholder="Mobile" />
-        {errors.mobile && <p>{errors.mobile.message}</p>}
-
-        <input type="email" {...register("email", { required: "Email is required" })} placeholder="Email" />
-        {errors.email && <p>{errors.email.message}</p>}
-
-        <input type="password" {...register("password", { required: "Password is required" })} placeholder="Password" />
-        {errors.password && <p>{errors.password.message}</p>}
-
-        <button type="submit">Register</button>
+    <div className="container mx-auto px-4">
+      <h1 className="text-2xl font-bold my-4">Register</h1>
+      {error && <p className="text-red-500">{error}</p>}
+      <form onSubmit={handleRegister} className="flex flex-col">
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="border border-gray-300 p-2 mb-4"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="border border-gray-300 p-2 mb-4"
+        />
+        <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+          Register
+        </button>
       </form>
     </div>
   );
 };
 
-export default RegisterPage;
+export default Register;

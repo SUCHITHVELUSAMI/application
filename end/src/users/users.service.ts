@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './create-user.dto';
-import { LoginDto } from './login.dto'; 
-import { JwtService } from '@nestjs/jwt'; // Import JwtService
+import { LoginDto } from './login.dto';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt'; // Import bcrypt for password hashing
 
 @Injectable()
 export class UsersService {
@@ -15,17 +16,27 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.usersRepository.create(createUserDto);
+    // Hash the user's password before saving
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const user = this.usersRepository.create({ ...createUserDto, password: hashedPassword });
     return this.usersRepository.save(user);
   }
 
   async login(loginDto: LoginDto): Promise<{ token: string }> {
     const user = await this.usersRepository.findOne({ where: { username: loginDto.username } });
-    if (!user || user.password !== loginDto.password) {
-      throw new Error('Invalid username or password');
+
+    if (!user) {
+      throw new HttpException('Invalid username or password', HttpStatus.UNAUTHORIZED);
     }
-    // Generate a JWT token
-    const token = this.jwtService.sign({ username: user.username }); // Create a token with the username
+
+    // Check if the provided password matches the hashed password in the database
+    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    if (!isPasswordValid) {
+      throw new HttpException('Invalid username or password', HttpStatus.UNAUTHORIZED);
+    }
+
+    // Generate a JWT token with the user ID and username
+    const token = this.jwtService.sign({ username: user.username, sub: user.id });
     return { token }; // Return the token
   }
 

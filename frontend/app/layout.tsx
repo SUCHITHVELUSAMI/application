@@ -1,27 +1,21 @@
-"use client";  // Mark this as a Client Component
-
-import React from 'react';
-import { useRouter } from 'next/navigation';  // Correct for App Router
+// app/layout.tsx
+import Link from 'next/link';
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');  // Clear the token from localStorage
-    router.push('/login');  // Redirect to the login page
-  };
-
   return (
     <html lang="en">
-      <head>
-        <title>Todo App</title>
-      </head>
       <body>
-        <nav>
-          <a href="/">Home</a> | <a href="/login">Login</a> | <a href="/register">Register</a> | <a href="/todos">Todos</a>
-          <button onClick={handleLogout}>Logout</button>  {/* Logout button */}
-        </nav>
-        {children}
+        <header>
+          <h1>My Todo App</h1>
+          <nav>
+            <Link href="/login">Login</Link>
+            <Link href="/register">Register</Link>
+          </nav>
+        </header>
+        <main>{children}</main>
+        <footer>
+          <p>&copy; {new Date().getFullYear()} My Todo App</p>
+        </footer>
       </body>
     </html>
   );

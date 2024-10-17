@@ -12,8 +12,10 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      // You can add more theme extensions here, e.g., fonts, spacing, etc.
     },
   },
   plugins: [],
 };
+
 export default config;
