@@ -1,24 +1,23 @@
-// app/layout.tsx
-import Link from 'next/link';
+"use client"; // Ensure this is a client component
 
-const RootLayout = ({ children }: { children: React.ReactNode }) => {
+import React, { ReactNode } from 'react';
+import '../styles/globals.css'; // Adjust the path according to your project structure
+
+interface RootLayoutProps {
+  children: ReactNode; // Define the type for children
+}
+
+const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en">
-      <body>
-        <header>
-          <h1>My Todo App</h1>
-          <nav>
-            <Link href="/login">Login</Link>
-            <Link href="/register">Register</Link>
-          </nav>
-        </header>
-        <main>{children}</main>
-        <footer>
-          <p>&copy; {new Date().getFullYear()} My Todo App</p>
-        </footer>
-      </body>
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Your App Title</title> {/* Replace with your app's title */}
+      </head>
+      <body>{children}</body>
     </html>
   );
 };
 
-export default RootLayout;
+export default RootLayout; // Make sure this line is here

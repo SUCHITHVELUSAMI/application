@@ -1,7 +1,19 @@
 /* /home/hp/application/frontend/styles/globals.css */
+
+/* Base styles */
+body {
+  font-family: Arial, sans-serif; /* Use a consistent font */
+  line-height: 1.6; /* Improve readability */
+  background-color: #f9f9f9; /* Light background color */
+  color: #333; /* Dark text color for contrast */
+  margin: 0; /* Remove default margin */
+  padding: 20px; /* Default padding */
+}
+
+/* Responsive styles for small screens */
 @media (max-width: 600px) {
   body {
-    padding: 10px;  /* Adjust padding for smaller screens */
+    padding: 10px; /* Adjust padding for smaller screens */
   }
 
   form {
@@ -12,5 +24,24 @@
   input, button {
     width: 100%; /* Make inputs and buttons full width */
     margin-bottom: 10px; /* Space between elements */
+    padding: 10px; /* Add padding for better touch targets */
+    border: 1px solid #ccc; /* Basic border for inputs */
+    border-radius: 5px; /* Rounded corners */
+  }
+
+  button {
+    background-color: #007bff; /* Bootstrap-like button color */
+    color: white; /* White text color */
+    cursor: pointer; /* Pointer cursor for buttons */
+    transition: background-color 0.3s; /* Smooth transition for hover */
+  }
+
+  button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+  }
+
+  input:focus, button:focus {
+    outline: none; /* Remove default outline */
+    border: 1px solid #007bff; /* Highlight border on focus */
   }
 }

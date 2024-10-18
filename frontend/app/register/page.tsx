@@ -1,54 +1,99 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+"use client";
 
-const Register = () => {
+import React, { useState } from 'react';
+import axios, { AxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
+
+const RegisterPage: React.FC = () => {
+  const router = useRouter();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [gender, setGender] = useState('');
+  const [country, setCountry] = useState('');
+  const [hobbies, setHobbies] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
+    setLoading(true);
 
     try {
-      await axios.post('http://localhost:3000/auth/register', { email, password });
-      navigate('/login'); // Redirect to login page after successful registration
+      await axios.post('http://localhost:3000/register', { name, email, mobile, gender, country, hobbies, password });
+      router.push('/login');
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to register.';
+      const axiosError = err as AxiosError;
+      const errorMessage =
+        axiosError.response?.data && typeof axiosError.response.data === 'object' 
+          ? (axiosError.response.data as { message?: string }).message || 'Failed to register.'
+          : 'Failed to register.'; // Fallback message
       setError(errorMessage);
-      console.error('Error registering:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4">
-      <h1 className="text-2xl font-bold my-4">Register</h1>
+    <div>
+      <h1>Register</h1>
       {error && <p className="text-red-500">{error}</p>}
-      <form onSubmit={handleRegister} className="flex flex-col">
+      <form onSubmit={handleRegister}>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Full Name"
+          required
+        />
         <input
           type="email"
-          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
-          className="border border-gray-300 p-2 mb-4"
+        />
+        <input
+          type="text"
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
+          placeholder="Mobile Number"
+          required
+        />
+        <select value={gender} onChange={(e) => setGender(e.target.value)} required>
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+        <select value={country} onChange={(e) => setCountry(e.target.value)} required>
+          <option value="">Select Country</option>
+          <option value="india">India</option>
+          <option value="sri_lanka">Sri Lanka</option>
+          <option value="japan">Japan</option>
+          {/* Add other countries as necessary */}
+        </select>
+        <input
+          type="text"
+          value={hobbies}
+          onChange={(e) => setHobbies(e.target.value)}
+          placeholder="Hobbies (e.g., Music, Sports)"
+          required
         />
         <input
           type="password"
-          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
           required
-          className="border border-gray-300 p-2 mb-4"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-          Register
+        <button type="submit" disabled={loading}>
+          {loading ? 'Registering...' : 'Register'}
         </button>
       </form>
     </div>
   );
 };
 
-export default Register;
+export default RegisterPage;

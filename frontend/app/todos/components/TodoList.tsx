@@ -1,52 +1,108 @@
-// /home/hp/application/frontend/app/todos/components/TodoList.tsx
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+"use client";
 
-const TodoList = ({ onTodoDeleted, onTodoUpdated }) => {
-  const [todos, setTodos] = useState([]);
-  const token = localStorage.getItem('token');
+import React, { useState } from 'react';
+import { Todo } from '../../types'; // Adjust the import path as necessary
 
-  const fetchTodos = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/todos', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTodos(response.data.todos); // Adjust based on your backend response structure
-    } catch (error) {
-      console.error('Error fetching todos:', error);
-    }
-  };
+// Define props for TodoList component
+interface TodoListProps {
+  todos: Todo[];
+  onDelete: (id: number) => Promise<void>;
+  onUpdate: (todo: Todo) => Promise<void>;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (newPage: number) => void;
+}
 
-  const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:3000/todos/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchTodos(); // Refresh the list
-    if (onTodoDeleted) onTodoDeleted(); // Call the parent's delete handler if exists
-  };
+const TodoList: React.FC<TodoListProps> = ({
+  todos,
+  onDelete,
+  onUpdate,
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
+  const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'in progress'>('all'); // Include 'in progress' in filter
+  const todosPerPage = 5; // Adjust this to change the number of todos displayed per page
 
-  const handleUpdate = async (todo) => {
-    await axios.put(`http://localhost:3000/todos/${todo.id}`, { ...todo, status: 'completed' }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    fetchTodos(); // Refresh the list
-    if (onTodoUpdated) onTodoUpdated(); // Call the parent's update handler if exists
-  };
+  // Filtered todos based on status
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === 'all') return true;
+    return filter === 'completed' ? todo.status === 'completed' :
+           filter === 'in progress' ? todo.status === 'in progress' :
+           todo.status === 'pending';
+  });
 
-  useEffect(() => {
-    fetchTodos(); // Fetch todos on mount
-  }, []);
+  // Paginate the todos
+  const paginatedTodos = filteredTodos.slice(
+    (currentPage - 1) * todosPerPage,
+    currentPage * todosPerPage
+  );
 
   return (
-    <ul>
-      {todos.map((todo) => (
-        <li key={todo.id}>
-          <span>{todo.text}</span>
-          <button onClick={() => handleUpdate(todo)}>Complete</button>
-          <button onClick={() => handleDelete(todo.id)}>Delete</button>
-        </li>
-      ))}
-    </ul>
+    <div>
+      {/* Filter Buttons */}
+      <div>
+        <button onClick={() => setFilter('all')} disabled={filter === 'all'} aria-pressed={filter === 'all'}>
+          Show All
+        </button>
+        <button onClick={() => setFilter('pending')} disabled={filter === 'pending'} aria-pressed={filter === 'pending'}>
+          Show Pending
+        </button>
+        <button onClick={() => setFilter('in progress')} disabled={filter === 'in progress'} aria-pressed={filter === 'in progress'}>
+          Show In Progress
+        </button>
+        <button onClick={() => setFilter('completed')} disabled={filter === 'completed'} aria-pressed={filter === 'completed'}>
+          Show Completed
+        </button>
+      </div>
+
+      {/* Todo List */}
+      <ul>
+        {paginatedTodos.length > 0 ? (
+          paginatedTodos.map((todo) => (
+            <li key={todo.id}>
+              <h3>{todo.title}</h3>
+              <p>{todo.description || "No description provided"}</p>
+              <p>Status: {todo.status}</p>
+              {todo.status === 'pending' && (
+                <button onClick={() => onUpdate({ ...todo, status: 'completed' })}>
+                  Mark as Completed
+                </button>
+              )}
+              {todo.status === 'in progress' && (
+                <button onClick={() => onUpdate({ ...todo, status: 'completed' })}>
+                  Complete
+                </button>
+              )}
+              <button onClick={() => onDelete(todo.id)}>Delete</button>
+            </li>
+          ))
+        ) : (
+          <p>No todos available based on filter.</p>
+        )}
+      </ul>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => onPageChange(currentPage - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(currentPage + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

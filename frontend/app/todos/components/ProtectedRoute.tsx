@@ -1,15 +1,26 @@
-// /home/hp/application/frontend/app/components/ProtectedRoute.tsx
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+interface ProtectedRouteProps {
+    children: React.ReactNode;
+    onLogout: () => void;
+}
 
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, onLogout }) => {
+    const router = useRouter();
 
-  return children;
+    useEffect(() => {
+        const token = localStorage.getItem('token'); // Example: check for a token
+        const isAuthenticated = !!token; // Convert token existence to boolean
+
+        if (!isAuthenticated) {
+            // If not authenticated, redirect to login or handle logout
+            onLogout();
+            router.push('/login');
+        }
+    }, [onLogout, router]);
+
+    return <>{children}</>; // Render children if authenticated
 };
 
 export default ProtectedRoute;
