@@ -12,14 +12,17 @@ const TodoForm: React.FC<TodoFormProps> = ({ onTodoCreated }) => {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<'pending' | 'completed' | 'in progress'>('pending'); // Include 'in progress' status
   const [error, setError] = useState<string | null>(null); // State for error message
+  const [loading, setLoading] = useState<boolean>(false); // State for loading indicator
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null); // Reset error message
+    setLoading(true); // Start loading indicator
 
     // Basic validation
     if (title.trim().length < 3) {
       setError("Title must be at least 3 characters long.");
+      setLoading(false); // Stop loading indicator
       return;
     }
 
@@ -33,6 +36,8 @@ const TodoForm: React.FC<TodoFormProps> = ({ onTodoCreated }) => {
     } catch (err) {
       setError("Failed to create todo."); // Handle potential error
       console.error(err); // Log the error for debugging
+    } finally {
+      setLoading(false); // Stop loading indicator
     }
   };
 
@@ -73,9 +78,10 @@ const TodoForm: React.FC<TodoFormProps> = ({ onTodoCreated }) => {
       </label>
       <button 
         type="submit" 
-        className="bg-blue-500 text-white rounded px-4 py-2"
+        className={`bg-blue-500 text-white rounded px-4 py-2 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`} 
+        disabled={loading} // Disable button when loading
       >
-        Add Todo
+        {loading ? 'Adding...' : 'Add Todo'} {/* Change button text based on loading state */}
       </button>
     </form>
   );

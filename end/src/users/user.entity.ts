@@ -6,7 +6,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   name: string;
 
   @Column()
@@ -21,7 +21,7 @@ export class User {
   @Column({ nullable: true })  // Optional field for email
   email: string;
 
-  @Column({ nullable: true })  // Optional field for country (new field added)
+  @Column({ nullable: true })  // Optional field for country
   country: string;
 
   @Column({ nullable: true })  // Optional field for hobbies

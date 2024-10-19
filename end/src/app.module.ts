@@ -12,17 +12,17 @@ import { User } from './users/user.entity'; // Import the User entity
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.POSTGRES_HOST || 'localhost',
-      port: parseInt(process.env.POSTGRES_PORT) || 5432,
-      username: process.env.POSTGRES_USERNAME || 'touse',
-      password: process.env.POSTGRES_PASSWORD || 'topass',
-      database: process.env.POSTGRES_DATABASE || 'To',
-      entities: [Todo, User], // Add both entities here
-      synchronize: true,
+      host: process.env.POSTGRES_HOST || 'localhost', // Database host
+      port: parseInt(process.env.POSTGRES_PORT, 10) || 5432, // Database port
+      username: process.env.POSTGRES_USERNAME || 'touse', // Database username
+      password: process.env.POSTGRES_PASSWORD || 'topass', // Database password
+      database: process.env.POSTGRES_DATABASE || 'To', // Database name
+      entities: [Todo, User], // Registering Todo and User entities
+      synchronize: true, // Automatically synchronize the database schema (not recommended for production)
     }),
-    TodoModule,
-    UsersModule,
-    AuthModule,
+    TodoModule, // Module for managing todos
+    UsersModule, // Module for managing users
+    AuthModule, // Module for authentication
   ],
 })
 export class AppModule {}

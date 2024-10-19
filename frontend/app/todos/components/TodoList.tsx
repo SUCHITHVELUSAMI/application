@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Todo } from '../../types'; // Adjust the import path as necessary
 
-// Define props for TodoList component
 interface TodoListProps {
   todos: Todo[];
   onDelete: (id: number) => Promise<void>;
@@ -21,10 +20,39 @@ const TodoList: React.FC<TodoListProps> = ({
   totalPages,
   onPageChange,
 }) => {
-  const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'in progress'>('all'); // Include 'in progress' in filter
-  const todosPerPage = 5; // Adjust this to change the number of todos displayed per page
+  const [filter, setFilter] = useState<'all' | 'completed' | 'pending' | 'in progress'>('all');
+  const [loadingTodo, setLoadingTodo] = useState<number | null>(null); // Track loading todo for async operations
+  const [error, setError] = useState<string | null>(null); // Error state
 
-  // Filtered todos based on status
+  const todosPerPage = 5;
+
+  const handleUpdate = async (todo: Todo) => {
+    setLoadingTodo(todo.id);
+    setError(null);
+    try {
+      await onUpdate(todo); // Update the todo
+    } catch (err) {
+      console.error('Failed to update todo:', err);
+      setError('Failed to update todo');
+    } finally {
+      setLoadingTodo(null); // Reset loading state
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    setLoadingTodo(id);
+    setError(null);
+    try {
+      await onDelete(id); // Delete the todo
+    } catch (err) {
+      console.error('Failed to delete todo:', err);
+      setError('Failed to delete todo');
+    } finally {
+      setLoadingTodo(null);
+    }
+  };
+
+  // Filter todos based on status
   const filteredTodos = todos.filter((todo) => {
     if (filter === 'all') return true;
     return filter === 'completed' ? todo.status === 'completed' :
@@ -56,25 +84,39 @@ const TodoList: React.FC<TodoListProps> = ({
         </button>
       </div>
 
+      {/* Error Handling */}
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+
       {/* Todo List */}
       <ul>
         {paginatedTodos.length > 0 ? (
           paginatedTodos.map((todo) => (
             <li key={todo.id}>
               <h3>{todo.title}</h3>
-              <p>{todo.description || "No description provided"}</p>
+              <p>{todo.description || 'No description provided'}</p>
               <p>Status: {todo.status}</p>
               {todo.status === 'pending' && (
-                <button onClick={() => onUpdate({ ...todo, status: 'completed' })}>
-                  Mark as Completed
+                <button 
+                  onClick={() => handleUpdate({ ...todo, status: 'completed' })}
+                  disabled={loadingTodo === todo.id}
+                >
+                  {loadingTodo === todo.id ? 'Updating...' : 'Mark as Completed'}
                 </button>
               )}
               {todo.status === 'in progress' && (
-                <button onClick={() => onUpdate({ ...todo, status: 'completed' })}>
-                  Complete
+                <button 
+                  onClick={() => handleUpdate({ ...todo, status: 'completed' })}
+                  disabled={loadingTodo === todo.id}
+                >
+                  {loadingTodo === todo.id ? 'Updating...' : 'Complete'}
                 </button>
               )}
-              <button onClick={() => onDelete(todo.id)}>Delete</button>
+              <button 
+                onClick={() => handleDelete(todo.id)} 
+                disabled={loadingTodo === todo.id}
+              >
+                {loadingTodo === todo.id ? 'Deleting...' : 'Delete'}
+              </button>
             </li>
           ))
         ) : (

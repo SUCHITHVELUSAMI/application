@@ -10,17 +10,17 @@ import { UnauthorizedException } from '@nestjs/common'; // Import UnauthorizedEx
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly userService: UserService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: 'your_jwt_secret', // Use your secret key
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract JWT from the Authorization header
+      ignoreExpiration: false, // Do not ignore expiration, the token must be valid
+      secretOrKey: 'your_jwt_secret', // Use your actual secret key
     });
   }
 
   async validate(payload: any): Promise<User> {
-    const user = await this.userService.findById(payload.sub); // Adjust as needed
+    const user = await this.userService.findById(payload.sub); // Get user by ID from the token payload
     if (!user) {
-      throw new UnauthorizedException(); // Throw error if user not found
+      throw new UnauthorizedException(); // Throw an error if the user is not found
     }
-    return user;
+    return user; // Return the user object to be available in the request
   }
 }
