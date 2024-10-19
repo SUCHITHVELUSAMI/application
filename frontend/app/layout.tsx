@@ -1,10 +1,10 @@
-"use client"; // Ensure this is a client component
+"use client";
 
 import React, { ReactNode } from 'react';
-import '../styles/globals.css'; // Adjust the path according to your project structure
+import '../styles/globals.css'; // Ensure this path is correct
 
 interface RootLayoutProps {
-  children: ReactNode; // Define the type for children
+  children: ReactNode;
 }
 
 const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
@@ -13,11 +13,13 @@ const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Your App Title</title> {/* Replace with your app's title */}
+        <title>Todo Application</title>
       </head>
-      <body>{children}</body>
+      <body className="min-h-screen bg-gray-100 text-gray-900 antialiased">
+        {children}
+      </body>
     </html>
   );
 };
 
-export default RootLayout; // Make sure this line is here
+export default RootLayout;

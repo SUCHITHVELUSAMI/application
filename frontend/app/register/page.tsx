@@ -21,24 +21,29 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:3000/register', { name, email, mobile, gender, country, hobbies, password });
+      // Register the user by sending the data to the API
+      await axios.post('http://localhost:3000/register', { 
+        name, email, mobile, gender, country, hobbies, password 
+      });
+      // Redirect to login page after successful registration
       router.push('/login');
     } catch (err) {
       const axiosError = err as AxiosError;
+      // Display error message from server response or a fallback message
       const errorMessage =
-        axiosError.response?.data && typeof axiosError.response.data === 'object' 
+        axiosError.response?.data && typeof axiosError.response.data === 'object'
           ? (axiosError.response.data as { message?: string }).message || 'Failed to register.'
-          : 'Failed to register.'; // Fallback message
-      setError(errorMessage);
+          : 'Failed to register.';
+      setError(errorMessage); // Set error message in state
     } finally {
-      setLoading(false);
+      setLoading(false); // Disable loading state
     }
   };
 
   return (
     <div>
       <h1>Register</h1>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500">{error}</p>} {/* Display error message if exists */}
       <form onSubmit={handleRegister}>
         <input
           type="text"
@@ -61,13 +66,21 @@ const RegisterPage: React.FC = () => {
           placeholder="Mobile Number"
           required
         />
-        <select value={gender} onChange={(e) => setGender(e.target.value)} required>
+        <select 
+          value={gender} 
+          onChange={(e) => setGender(e.target.value)} 
+          required
+        >
           <option value="">Select Gender</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
           <option value="other">Other</option>
         </select>
-        <select value={country} onChange={(e) => setCountry(e.target.value)} required>
+        <select 
+          value={country} 
+          onChange={(e) => setCountry(e.target.value)} 
+          required
+        >
           <option value="">Select Country</option>
           <option value="india">India</option>
           <option value="sri_lanka">Sri Lanka</option>

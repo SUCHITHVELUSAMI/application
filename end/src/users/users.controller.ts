@@ -1,30 +1,26 @@
-import { Body, Controller, Get, Post, Param } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './create-user.dto';
-import { LoginDto } from './login.dto'; // Import the Login DTO
-import { User } from './user.entity';
+// src/user/user.controller.ts
 
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+import { Controller, Post, Body } from '@nestjs/common';
+import { UserService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { LoginDto } from '../auth/dto/login.dto'; // Import LoginDto
 
-  @Post('register')  // Handles POST requests to /users/register
-  async register(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.usersService.create(createUserDto); // Call the service to create a user
+@Controller('api/users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Post('register')
+  async create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.createUser(createUserDto);
   }
 
-  @Post('login')  // Handles POST requests to /users/login
-  async login(@Body() loginDto: LoginDto): Promise<{ token: string }> {
-    return this.usersService.login(loginDto); // Call the service to handle login and return the token
-  }
-
-  @Get()  // Handles GET requests to /users
-  async findAll(): Promise<User[]> {
-    return this.usersService.findAll();
-  }
-
-  @Get(':username')  // Handles GET requests to /users/:username
-  async findOne(@Param('username') username: string): Promise<User> {
-    return this.usersService.findOne(username);
+  @Post('login') // New login route
+  async login(@Body() loginDto: LoginDto) {
+    const user = await this.userService.validateUser(loginDto);
+    if (!user) {
+      throw new Error('Invalid credentials'); // Handle invalid credentials appropriately
+    }
+    // Here you would usually return a JWT token or user info
+    return user; // For now, returning user info directly
   }
 }

@@ -1,35 +1,32 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { IsEmail, IsString } from 'class-validator';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Todo } from '../todos/todo.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 100 })
-  @IsString()
+  @Column({nullable: true})
   name: string;
 
-  @Column({ length: 10 })
-  @IsString()
+  @Column()
+  password: string;
+
+  @Column({ nullable: true })  // Optional field for mobile
   mobile: string;
 
-  @Column({ length: 10 })
-  @IsString()
+  @Column({ nullable: true })  // Optional field for gender
   gender: string;
 
-  @Column('simple-array')
-  hobbies: string[];
-
-  @Column({ unique: true }) // Ensure usernames are unique
-  @IsString()
-  username: string;
-
-  @Column()
-  @IsEmail()
+  @Column({ nullable: true })  // Optional field for email
   email: string;
 
-  @Column()
-  @IsString()
-  password: string; // Store the hashed password
+  @Column({ nullable: true })  // Optional field for country (new field added)
+  country: string;
+
+  @Column({ nullable: true })  // Optional field for hobbies
+  hobbies: string;
+
+  @OneToMany(() => Todo, (todo) => todo.user)
+  todos: Todo[];
 }

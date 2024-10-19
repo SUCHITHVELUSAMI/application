@@ -1,19 +1,32 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+// src/todos/todo.entity.ts
+
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { User } from '../users/user.entity';
+
+export enum TodoStatus {
+  PENDING = 'pending',
+  IN_PROGRESS = 'in-progress',
+  COMPLETED = 'completed',
+}
 
 @Entity()
 export class Todo {
   @PrimaryGeneratedColumn()
-  id: number; // Automatically generated ID for the todo item
+  id: number;
 
-  @Column({ length: 100 })
-  title: string; // Title of the todo item
+  @Column({ nullable: true })
+  title: string;
 
-  @Column({ length: 255 })
-  description: string; // Description of the todo item
+  @Column({ nullable: true })
+  description: string;
 
-  @Column()
-  time: Date; // Time associated with the todo item
+  @Column({
+    type: 'enum',
+    enum: TodoStatus,
+    default: TodoStatus.PENDING,
+  })
+  status: TodoStatus;
 
-  @Column({ default: 'pending' })
-  status: string; // Status of the todo item, default is 'pending'
+  @ManyToOne(() => User, (user) => user.todos) // Ensure this relationship is correctly defined
+  user: User;
 }

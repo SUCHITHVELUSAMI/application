@@ -10,17 +10,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, onLogout }) =
     const router = useRouter();
 
     useEffect(() => {
-        const token = localStorage.getItem('token'); // Example: check for a token
-        const isAuthenticated = !!token; // Convert token existence to boolean
+        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        const isAuthenticated = !!token; // Check if token exists
 
         if (!isAuthenticated) {
-            // If not authenticated, redirect to login or handle logout
+            // If not authenticated, call onLogout and redirect to login page
             onLogout();
             router.push('/login');
         }
     }, [onLogout, router]);
 
-    return <>{children}</>; // Render children if authenticated
+    return <>{children}</>; // Render children if authenticated, otherwise redirect
 };
 
 export default ProtectedRoute;

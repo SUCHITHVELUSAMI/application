@@ -1,56 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Todo } from './todo.entity';
-import { CreateTodoDto } from './create-todo.dto'; // Importing DTO for creating a todo
-import { UpdateTodoDto } from './update-todo.dto'; // Importing DTO for updating a todo
+import { CreateTodoDto } from './dto/create-todo.dto';
+import { User } from '../users/user.entity';
 
 @Injectable()
-export class TodosService {
+export class TodoService {
   constructor(
     @InjectRepository(Todo)
-    private todosRepository: Repository<Todo>,
+    private readonly todoRepository: Repository<Todo>,
   ) {}
 
-  // Find all todos with pagination and filtering
-  async findAll(page: number = 1, limit: number = 10, status?: string): Promise<Todo[]> {
-    const query = this.todosRepository.createQueryBuilder('todo');
-
-    if (status) {
-      query.where('todo.status = :status', { status });
-    }
-
-    query.skip((page - 1) * limit).take(limit);
-
-    return await query.getMany(); // Return the array of todos
+  async getTodos(user: User, page: number = 1, limit: number = 10): Promise<Todo[]> {
+    const [todos, total] = await this.todoRepository.findAndCount({
+      where: { user },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+    return todos;
   }
 
-  // Find a single todo by its ID
-  async findOne(id: number): Promise<Todo> {
-    const todo = await this.todosRepository.findOneBy({ id });
+  async getTodoById(id: number): Promise<Todo> {
+    const todo = await this.todoRepository.findOne({ where: { id } });
     if (!todo) {
-      throw new Error(`Todo with ID ${id} not found`); // Optionally, throw a custom exception here
+      throw new NotFoundException(`Todo with ID ${id} not found`);
     }
     return todo;
   }
 
-  // Create a new todo
-  async create(todo: CreateTodoDto): Promise<Todo> {
-    const newTodo = this.todosRepository.create(todo); // Create a new todo
-    return this.todosRepository.save(newTodo); // Save to the database and return the saved todo
+  async createTodo(user: User, createTodoDto: CreateTodoDto): Promise<Todo> {
+    // Ensure the createTodoDto has title and description properly populated
+    const todo = this.todoRepository.create({
+      ...createTodoDto, // Spread operator to take title, description, and status
+      user, // Associate the todo with the user
+    });
+
+    // Log the todo being created for debugging
+    console.log('Creating todo with data:', todo);
+
+    return await this.todoRepository.save(todo);
   }
 
-  // Update an existing todo
-  async update(id: number, todo: UpdateTodoDto): Promise<Todo> {
-    await this.todosRepository.update(id, todo);
-    return this.findOne(id); // Return the updated todo
-  }
-
-  // Remove a todo by its ID
-  async remove(id: number): Promise<void> {
-    const result = await this.todosRepository.delete(id);
-    if (result.affected === 0) {
-      throw new Error(`Todo with ID ${id} not found`); // Optionally, throw a custom exception here
-    }
-  }
+  // Implement other methods like updateTodo, deleteTodo, etc.
 }
