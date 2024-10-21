@@ -1,22 +1,20 @@
+// /backend/src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt'; // Import JwtModule
+import { UserModule } from '../user/user.module'; // Import UserModule
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { UsersModule } from '../users/users.module'; // Import UsersModule correctly
-import { JwtStrategy } from './jwt.strategy';
+import { JwtStrategy } from './jwt.strategy'; // Import JwtStrategy if you have one
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }), // Use JWT strategy by default
+    UserModule, // Make sure UserModule is imported to provide UserService
     JwtModule.register({
-      secret: 'your_jwt_secret', // Ensure to use a secure secret
-      signOptions: { expiresIn: '1h' }, // Set token expiration
+      secret: process.env.JWT_SECRET || 'your_jwt_secret', // Use your secret here
+      signOptions: { expiresIn: '60s' }, // Set the expiration time for your tokens
     }),
-    UsersModule, // Import UsersModule to access user-related services
   ],
-  providers: [AuthService, JwtStrategy], // Providers for authentication services and strategies
-  controllers: [AuthController], // Controllers for handling auth routes
-  exports: [PassportModule], // Export PassportModule if you need to use guards elsewhere
+  providers: [AuthService, JwtStrategy], // Register JwtStrategy if you have one
+  controllers: [AuthController],
 })
 export class AuthModule {}

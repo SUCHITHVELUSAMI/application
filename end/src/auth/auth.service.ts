@@ -1,49 +1,27 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../users/users.service';
+// /backend/src/auth/auth.service.ts
+import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
-import { CreateUserDto } from './dto/create-user.dto'; // Ensure this is correctly imported
-import * as bcrypt from 'bcrypt';
+import { RegisterDto } from './dto/register.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly userService: UserService,
-        private readonly jwtService: JwtService
-    ) {}
+  constructor(private readonly userService: UserService, private readonly jwtService: JwtService) {}
 
-    // Method to create a new user
-    async register(createUserDto: CreateUserDto): Promise<{ accessToken: string }> {
-        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-        
-        const user = await this.userService.createUser({ ...createUserDto, password: hashedPassword }); // Call createUser instead of create
-        
-        const payload = { userId: user.id, mobile: user.mobile }; // Customize payload as needed
-        const accessToken = this.jwtService.sign(payload); // Create token using JwtService
+  async register(registerDto: RegisterDto) {
+    const user = await this.userService.create(registerDto);
+    return { message: 'User registered successfully' };
+  }
 
-        return { accessToken }; // Return the generated token
+  async login(loginDto: LoginDto) {
+    const user = await this.userService.validateUser(loginDto.mobile, loginDto.password);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Login method to authenticate the user and return JWT token
-    async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
-        const { mobile, password } = loginDto;
-
-        // Find the user by their mobile number
-        const user = await this.userService.findByMobile(mobile);
-        if (!user) {
-            throw new UnauthorizedException('Invalid credentials'); // User not found
-        }
-
-        // Validate the user's password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials'); // Password does not match
-        }
-
-        // Generate the JWT token
-        const payload = { userId: user.id, mobile: user.mobile }; // Customize payload as needed
-        const accessToken = this.jwtService.sign(payload); // Create token using JwtService
-
-        return { accessToken }; // Return the generated token
-    }
+    const payload = { mobile: user.mobile };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
 }

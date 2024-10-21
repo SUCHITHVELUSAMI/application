@@ -1,25 +1,16 @@
-"use client";
+// /frontend/app/layout.tsx
 
-import React, { ReactNode } from 'react';
-import '../styles/globals.css'; // Ensure this path is correct
+import React from 'react';
+import './styles/globals.css'; // Correct path to CSS file
 
-interface RootLayoutProps {
-  children: ReactNode;
-}
-
-const RootLayout: React.FC<RootLayoutProps> = ({ children }) => {
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <html lang="en">
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Todo Application</title>
-      </head>
-      <body className="min-h-screen bg-gray-100 text-gray-900 antialiased">
+      <body>
         {children}
       </body>
     </html>
   );
 };
 
-export default RootLayout;
+export default Layout;

@@ -1,13 +1,12 @@
-// src/auth/dto/login.dto.ts
-
-import { IsNotEmpty, IsString } from 'class-validator';
+// /backend/src/auth/dto/login.dto.ts
+import { IsString, IsNotEmpty } from 'class-validator';
 
 export class LoginDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   mobile: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   password: string;
 }

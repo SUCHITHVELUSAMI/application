@@ -1,101 +1,55 @@
-"use client"; // Ensure this is a client component
+// /frontend/app/todos/page.tsx
 
-import { Todo } from '../types';
-import React, { useEffect, useState, useCallback } from 'react';
-import axios, { AxiosError } from 'axios';
-import { useRouter } from 'next/navigation'; // Import useRouter for navigation
-import TodoForm from './components/TodoForm'; // Adjust this import based on your file structure
+"use client"; // Add this line to mark the component as a Client Component
 
-const API_BASE_URL = 'http://localhost:3001'; // Corrected port to match your backend
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import TodoList from './components/TodoList';
+import TodoForm from './components/TodoForm';
 
-const TodoPage: React.FC = () => {
-    const [todos, setTodos] = useState<Todo[]>([]);
-    const [error, setError] = useState<string | null>(null); // For error handling
-    const [loading, setLoading] = useState<boolean>(false); // For loading state
-    const router = useRouter(); // Initialize router for navigation
+const API_URL = 'http://localhost:3001/api/todos'; // Adjust your API endpoint
 
-    const fetchTodos = useCallback(async () => {
-        setLoading(true); // Set loading to true when fetching todos
-        try {
-            const token = localStorage.getItem('token'); // Get token from localStorage
+const Todos = () => {
+  const [todos, setTodos] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
 
-            if (!token) {
-                console.log('No token found, redirecting to login');
-                router.push('/login'); // Redirect to login if token is not found
-                return; // Exit early
-            }
+  // Function to fetch todos
+  const fetchTodos = async () => {
+    try {
+      const response = await axios.get(`${API_URL}?page=${page}`);
+      setTodos(response.data.todos);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+      setTodos([]); // Reset todos on error
+      setTotalPages(0); // Reset total pages on error
+    }
+  };
 
-            const response = await axios.get(`${API_BASE_URL}/todos`, {
-                headers: {
-                    Authorization: `Bearer ${token}`, // Include token in the request headers
-                },
-            });
-            setTodos(response.data); // Assuming response.data is an array of todos
-        } catch (error) {
-            if (error instanceof AxiosError) {
-                console.error('Error fetching todos:', error.message);
-                setError(error.message); // Set error message
-            } else {
-                console.error('Unexpected error:', error);
-                setError('An unexpected error occurred.');
-            }
-        } finally {
-            setLoading(false); // Set loading to false after fetch completes
-        }
-    }, [router]); // Added router as a dependency
+  // useEffect to fetch todos on page change
+  useEffect(() => {
+    fetchTodos();
+  }, [page]); // Fetch todos when the page changes
 
-    useEffect(() => {
-        fetchTodos();
-    }, [fetchTodos]);
+  // Function to refresh the todos
+  const refreshTodos = () => {
+    fetchTodos(); // Re-fetch todos
+  };
 
-    const handleTodoCreated = async (newTodo: Omit<Todo, 'id'>) => {
-        try {
-            const token = localStorage.getItem('token'); // Get token from localStorage
-
-            if (!token) {
-                console.log('No token found, redirecting to login');
-                router.push('/login'); // Redirect to login if token is not found
-                return; // Exit early
-            }
-
-            const response = await axios.post(`${API_BASE_URL}/todos`, newTodo, {
-                headers: {
-                    Authorization: `Bearer ${token}`, // Include token in the request headers
-                },
-            });
-            setTodos((prevTodos) => [...prevTodos, response.data]); // Add new todo to the list
-        } catch (error) {
-            if (error instanceof AxiosError) {
-                console.error('Error creating todo:', error.message);
-                setError(error.message); // Set error message
-            } else {
-                console.error('Unexpected error:', error);
-                setError('An unexpected error occurred while creating the todo.');
-            }
-        }
-    };
-
-    return (
-        <div>
-            <h1>Todo List</h1>
-            {loading && <p>Loading todos...</p>} {/* Display loading state */}
-            {error && <p style={{ color: 'red' }}>Error: {error}</p>} {/* Display error if it exists */}
-            <TodoForm onTodoCreated={handleTodoCreated} /> {/* Add TodoForm */}
-            <ul>
-                {todos.length > 0 ? (
-                    todos.map((todo) => (
-                        <li key={todo.id}>
-                            <h3>{todo.title}</h3>
-                            <p>{todo.description || 'No description provided'}</p>
-                            <p>Status: {todo.status}</p>
-                        </li>
-                    ))
-                ) : (
-                    <p>No todos available</p>
-                )}
-            </ul>
-        </div>
-    );
+  return (
+    <div>
+      <h2>Your Todos</h2>
+      <TodoForm refreshTodos={refreshTodos} />
+      <TodoList todos={todos} />
+      <button onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))} disabled={page >= totalPages}>
+        Next Page
+      </button>
+      <button onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={page <= 1}>
+        Previous Page
+      </button>
+    </div>
+  );
 };
 
-export default TodoPage;
+export default Todos;

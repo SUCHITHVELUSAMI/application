@@ -1,8 +1,7 @@
-// src/users/users.module.ts
-
+// /backend/src/user/user.module.ts
 import { Module } from '@nestjs/common';
+import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserService } from './users.service';
 import { User } from './user.entity';
 
 @Module({
@@ -10,4 +9,4 @@ import { User } from './user.entity';
   providers: [UserService],
   exports: [UserService],
 })
-export class UsersModule {}
+export class UserModule {}

@@ -1,18 +1,24 @@
+// /backend/src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter'; // Import the custom filter
+import { PinoLogger } from 'nestjs-pino'; // Import PinoLogger
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
-  // Enable CORS for frontend-backend communication
-  app.enableCors({
-    origin: 'http://localhost:3000', // Frontend URL
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+  // Create the Nest application
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  // Get the PinoLogger instance
+  const logger = app.get(PinoLogger);
+
+  // Set up global exception filter with the logger
+  app.useGlobalFilters(new HttpExceptionFilter(logger)); 
+
+  app.enableCors();
+
   await app.listen(3001);
 }
 bootstrap();
