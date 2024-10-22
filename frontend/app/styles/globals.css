@@ -1,8 +1,29 @@
-/* /frontend/app/styles/globals.css */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-    background-color: #f0f0f0;
-  }
-  
+/* globals.css */
+
+.home-container {
+  text-align: center;
+  padding: 50px;
+  background-color: #f9f9f9;
+  min-height: 100vh; /* Full height for a more balanced look */
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Space between buttons */
+}
+
+.action-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background-color: #0070f3; /* Customize your button color */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: #005bb5; /* Darker shade on hover */
+}

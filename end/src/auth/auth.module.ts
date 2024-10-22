@@ -1,20 +1,26 @@
 // /backend/src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt'; // Import JwtModule
-import { UserModule } from '../user/user.module'; // Import UserModule
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UserModule } from '../user/user.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtStrategy } from './jwt.strategy'; // Import JwtStrategy if you have one
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
-    UserModule, // Make sure UserModule is imported to provide UserService
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your_jwt_secret', // Use your secret here
-      signOptions: { expiresIn: '60s' }, // Set the expiration time for your tokens
+    ConfigModule.forRoot({ isGlobal: true }),
+    UserModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET', 'your_jwt_secret'),
+        signOptions: { expiresIn: '60s' },
+      }),
     }),
   ],
-  providers: [AuthService, JwtStrategy], // Register JwtStrategy if you have one
+  providers: [AuthService, JwtStrategy], // Removed Logger from here
   controllers: [AuthController],
 })
 export class AuthModule {}

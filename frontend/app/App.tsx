@@ -1,17 +1,25 @@
-// /frontend/app/App.tsx
 import React from 'react';
 import ErrorBoundary from './todos/components/ErrorBoundary';
+import Head from 'next/head';
+import './styles/globals.css'; // Import global styles
 
 interface MyAppProps {
   Component: React.FC; // Type for the component being rendered
-  pageProps: any;      // Type for the page props; you can replace `any` with a more specific type if known
+  pageProps: Record<string, any>; // More flexible typing for pageProps
 }
 
 const MyApp: React.FC<MyAppProps> = ({ Component, pageProps }) => {
   return (
-    <ErrorBoundary>
-      <Component {...pageProps} />
-    </ErrorBoundary>
+    <>
+      <Head>
+        <title>Your App Title</title>
+        <meta name="description" content="Your app description" />
+        <link rel="icon" href="/favicon.ico" /> {/* Optional: Add a favicon */}
+      </Head>
+      <ErrorBoundary>
+        <Component {...pageProps} />
+      </ErrorBoundary>
+    </>
   );
 };
 

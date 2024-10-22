@@ -1,7 +1,7 @@
-// /backend/src/todos/dto/update-todo.dto.ts
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateTodoDto {
+  @IsString()
   @IsNotEmpty()
   status: string; // 'in progress' or 'completed'
 }

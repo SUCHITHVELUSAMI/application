@@ -1,31 +1,29 @@
-// /backend/src/auth/dto/register.dto.ts
-import { IsNotEmpty, IsEmail, IsMobilePhone, IsEnum, IsArray, ArrayNotEmpty } from 'class-validator';
-
-export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-}
+import { IsString, IsNotEmpty, IsArray, IsEnum } from 'class-validator';
+import { Gender } from '../../user/user.entity';
 
 export class RegisterDto {
+  @IsString()
+  @IsNotEmpty()
+  mobile: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsMobilePhone()
-  mobile: string;
+  @IsString()
+  email: string;
 
   @IsEnum(Gender)
   gender: Gender;
 
+  @IsString()
   @IsNotEmpty()
   country: string;
 
-  @IsEmail()
-  email: string;
-
-  @IsNotEmpty()
-  password: string;
-
   @IsArray()
-  @ArrayNotEmpty({ message: 'At least one hobby must be selected' })
   hobbies: string[];
 }

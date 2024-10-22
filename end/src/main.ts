@@ -1,24 +1,29 @@
-// /backend/src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from 'nestjs-pino';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter'; // Import the custom filter
-import { PinoLogger } from 'nestjs-pino'; // Import PinoLogger
+import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  // Create the Nest application
-  const app = await NestFactory.create(AppModule, {
-    bufferLogs: true,
+  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
+
+  // Enable CORS
+  app.enableCors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Use environment variable for frontend URL
+    credentials: true,
   });
 
-  // Get the PinoLogger instance
-  const logger = app.get(PinoLogger);
+  // Enable global validation pipes
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true, // Strip properties that are not part of the DTO
+    forbidNonWhitelisted: true, // Throw an error if non-whitelisted properties are present
+    transform: true, // Automatically transform payloads to DTO instances
+  }));
 
-  // Set up global exception filter with the logger
-  app.useGlobalFilters(new HttpExceptionFilter(logger)); 
-
-  app.enableCors();
-
-  await app.listen(3001);
+  const port = process.env.PORT || 3001; // Use environment variable for port
+  await app.listen(port);
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
-bootstrap();
+
+bootstrap().catch(err => {
+  console.error('Error during application bootstrap:', err);
+});

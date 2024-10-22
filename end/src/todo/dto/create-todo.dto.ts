@@ -1,4 +1,4 @@
-// src/todo/dto/create-todo.dto.ts
+// src/todos/dto/create-todo.dto.ts
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateTodoDto {
@@ -12,9 +12,9 @@ export class CreateTodoDto {
 
   @IsString()
   @IsNotEmpty()
-  time: string; // Assuming time is a string; adjust type if needed.
+  time: string; // Assuming time is sent as a string in the correct format
 
   @IsString()
   @IsNotEmpty()
-  status: string; // Adjust according to your valid statuses.
+  status: 'in progress' | 'completed'; // Define valid statuses
 }

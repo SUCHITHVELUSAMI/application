@@ -4,6 +4,7 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation'; // Correct import for App Router
 
 // Define the form data structure
 interface RegisterFormInputs {
@@ -19,12 +20,14 @@ interface RegisterFormInputs {
 const Register = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>();
   const [apiError, setApiError] = useState<string>('');
+  const router = useRouter(); // Initialize the router
 
   // Define the submit handler type
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
     try {
       await axios.post('http://localhost:3001/auth/register', data);
-      // Handle success (e.g., redirect to login page or show success message)
+      // Handle success: redirect to login page
+      router.push('/login');
     } catch (error: any) {
       setApiError(error.response?.data?.message || 'Something went wrong!');
     }

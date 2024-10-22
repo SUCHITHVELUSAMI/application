@@ -1,12 +1,20 @@
-// /backend/src/user/user.module.ts
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
-  providers: [UserService],
-  exports: [UserService],
+  imports: [
+    // Register User entity with TypeORM for dependency injection
+    TypeOrmModule.forFeature([User]),
+  ],
+  providers: [
+    // Provide the UserService for dependency injection
+    UserService,
+  ],
+  exports: [
+    // Export UserService to be used in other modules
+    UserService,
+  ],
 })
 export class UserModule {}

@@ -1,29 +1,38 @@
-// /backend/src/user/user.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  NOT_SPECIFIED = 'not-specified',
+}
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  name: string;
-
-  @Column()
+  @Column({ unique: true })
   mobile: string;
-
-  @Column({ nullable: true }) // Optional field
-  gender?: string;
-
-  @Column({ nullable: true }) // Optional field
-  country?: string;
-
-  @Column({ unique: true }) // Ensure email is unique
-  email: string;
 
   @Column()
   password: string;
 
-  @Column('simple-array') // Storing hobbies as a comma-separated string
+  @Column()
+  name: string;
+
+  @Column({ unique: false, nullable: true })
+  email: string;
+
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    default: Gender.NOT_SPECIFIED,
+  })
+  gender: Gender;
+
+  @Column()
+  country: string;
+
+  @Column('simple-array', { default: '' })
   hobbies: string[];
 }
