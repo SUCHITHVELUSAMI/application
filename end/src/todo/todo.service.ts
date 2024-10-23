@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
@@ -20,21 +25,24 @@ export class TodosService {
     const newTodo = this.todoRepository.create(todoData);
     try {
       await this.todoRepository.save(newTodo);
-      this.logger.info(`Todo created with ID: ${newTodo.id}`, { todoData });
+      this.logger.info(`Todo created successfully with ID: ${newTodo.id}`, { todoData });
       return newTodo;
     } catch (error) {
-      this.logger.error('Failed to create a todo', error);
+      this.logger.error('Failed to create a todo', { error, todoData });
       throw new InternalServerErrorException('Could not create todo');
     }
   }
 
   async update(id: number, updateData: UpdateTodoDto): Promise<Todo> {
     const todo = await this.findOne(id);
-    Object.assign(todo, updateData);
+    const updatedTodo = this.todoRepository.merge(todo, updateData);
+
     try {
-      return await this.todoRepository.save(todo);
+      const savedTodo = await this.todoRepository.save(updatedTodo);
+      this.logger.info(`Todo with ID: ${id} updated successfully`, { updateData });
+      return savedTodo;
     } catch (error) {
-      this.logger.error('Failed to update todo', error);
+      this.logger.error('Failed to update todo', { id, error });
       throw new InternalServerErrorException('Could not update todo');
     }
   }
@@ -42,6 +50,7 @@ export class TodosService {
   async findOne(id: number): Promise<Todo> {
     const todo = await this.todoRepository.findOne({ where: { id } });
     if (!todo) {
+      this.logger.warn(`Todo with ID: ${id} not found`);
       throw new NotFoundException('Todo not found');
     }
     return todo;
@@ -49,8 +58,13 @@ export class TodosService {
 
   async remove(id: number): Promise<void> {
     const todo = await this.findOne(id);
-    await this.todoRepository.remove(todo);
-    this.logger.info(`Todo with ID: ${id} has been removed`); // Logging removal for better traceability
+    try {
+      await this.todoRepository.remove(todo);
+      this.logger.info(`Todo with ID: ${id} has been removed`);
+    } catch (error) {
+      this.logger.error('Failed to remove todo', { id, error });
+      throw new InternalServerErrorException('Could not remove todo');
+    }
   }
 
   async findAll(page: number): Promise<{ todos: Todo[]; totalPages: number }> {
@@ -70,7 +84,7 @@ export class TodosService {
 
       return { todos, totalPages };
     } catch (error) {
-      this.logger.error('Failed to fetch todos', error);
+      this.logger.error('Failed to fetch todos', { error });
       throw new InternalServerErrorException('Could not fetch todos');
     }
   }

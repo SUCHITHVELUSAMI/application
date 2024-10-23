@@ -18,11 +18,13 @@ const TodoForm: React.FC<TodoFormProps> = ({ refreshTodos }) => {
   const [status, setStatus] = useState(STATUS_OPTIONS.IN_PROGRESS);
   const [time, setTime] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null); // For success message
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null); // Reset success message
     setLoading(true);
 
     // Basic validation
@@ -32,11 +34,18 @@ const TodoForm: React.FC<TodoFormProps> = ({ refreshTodos }) => {
       return;
     }
 
-    // Convert the time to ISO 8601 format (UTC)
-    const formattedTime = new Date(time).toISOString();
+    // Check if the time is a valid future date
+    const selectedTime = new Date(time);
+    if (isNaN(selectedTime.getTime()) || selectedTime <= new Date()) {
+      setError('Please select a valid future time.');
+      setLoading(false);
+      return;
+    }
 
-    // Retrieve the token from localStorage or any other storage method you use
-    const token = localStorage.getItem('token'); // Change this line as necessary
+    // Convert the time to ISO 8601 format (UTC)
+    const formattedTime = selectedTime.toISOString();
+
+    const token = localStorage.getItem('token'); // Retrieve the token
 
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/todos`, {
@@ -55,9 +64,10 @@ const TodoForm: React.FC<TodoFormProps> = ({ refreshTodos }) => {
       setDescription('');
       setStatus(STATUS_OPTIONS.IN_PROGRESS);
       setTime('');
-    } catch (error: any) {
+      setSuccess('Todo added successfully!'); // Set success message
+    } catch (error) {
       console.error('Failed to create todo:', error);
-      if (error.response) {
+      if (axios.isAxiosError(error) && error.response) {
         console.error('Response data:', error.response.data);
         setError(`Error ${error.response.status}: ${error.response.data.message || 'Failed to create todo.'}`);
       } else {
@@ -70,7 +80,8 @@ const TodoForm: React.FC<TodoFormProps> = ({ refreshTodos }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <p className="error-message">{error}</p>}
+      {error && <p className="error-message" aria-live="assertive">{error}</p>}
+      {success && <p className="success-message" aria-live="polite">{success}</p>}
 
       <label htmlFor="name">Name</label>
       <input
@@ -95,7 +106,7 @@ const TodoForm: React.FC<TodoFormProps> = ({ refreshTodos }) => {
       <label htmlFor="time">Time</label>
       <input
         id="time"
-        type="datetime-local"  // Updated to type "datetime-local"
+        type="datetime-local" // Updated to type "datetime-local"
         value={time}
         onChange={(e) => setTime(e.target.value)}
         required

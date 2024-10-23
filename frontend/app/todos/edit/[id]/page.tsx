@@ -9,26 +9,21 @@ interface Todo {
   name: string;
   description: string;
   status: 'in progress' | 'completed';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-const EditTodo: React.FC = () => {
+const EditTodo: React.FC<{ params: { id: string } }> = ({ params }) => {
   const router = useRouter();
   const [todo, setTodo] = useState<Todo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [id, setId] = useState<string | null>(null);
-
-  // Get the dynamic ID from the URL
-  useEffect(() => {
-    const pathname = window.location.pathname;
-    const urlParts = pathname.split('/');
-    const dynamicId = urlParts[urlParts.length - 2]; // Since the last part is 'edit'
-    setId(dynamicId);
-  }, []);
 
   // Fetch todo details based on ID
   useEffect(() => {
     const fetchTodo = async () => {
+      const { id } = params; // Use params to get the dynamic ID
+
       if (id) {
         setLoading(true);
         try {
@@ -58,7 +53,7 @@ const EditTodo: React.FC = () => {
     };
 
     fetchTodo();
-  }, [id]);
+  }, [params]); // Depend on params to re-fetch when it changes
 
   // Handle todo update
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -66,7 +61,11 @@ const EditTodo: React.FC = () => {
     if (todo) {
       try {
         const token = localStorage.getItem('token');
-        await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/todos/${id}`, todo, {
+
+        // Create a copy of the todo without id, createdAt, and updatedAt
+        const { id, createdAt, updatedAt, ...updatedTodo } = todo; // Destructure to exclude these fields
+
+        await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/todos/${id}`, updatedTodo, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

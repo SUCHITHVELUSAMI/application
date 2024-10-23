@@ -15,17 +15,17 @@ export class Todo {
   name: string;
 
   @Column({ nullable: true }) // Optional description
-  description: string;
+  description?: string; // Mark as optional
 
   @Column({ type: 'timestamp', nullable: true }) // Optional time for the todo
-  time: Date;
+  time?: Date; // Mark as optional
 
   @Column({ type: 'enum', enum: TodoStatus, default: TodoStatus.IN_PROGRESS }) // Default status set to IN_PROGRESS
   status: TodoStatus;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' }) // Auto-set creation timestamp
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', nullable: false }) // Auto-set creation timestamp
   createdAt: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' }) // Auto-update on changes
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP', nullable: false }) // Auto-update on changes
   updatedAt: Date;
 }

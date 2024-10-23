@@ -25,6 +25,7 @@ const Todos = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null); // For success message
 
   const fetchTodos = async () => {
     setLoading(true);
@@ -61,6 +62,7 @@ const Todos = () => {
 
   const refreshTodos = () => {
     fetchTodos();
+    setSuccess('Todo added successfully!'); // Optionally set success message here
   };
 
   if (loading) return <p>Loading todos...</p>;
@@ -68,7 +70,8 @@ const Todos = () => {
   return (
     <div>
       <h2>Your Todos</h2>
-      {error && <p className="error-message">{error}</p>}
+      {error && <p className="error-message" aria-live="assertive">{error}</p>}
+      {success && <p className="success-message" aria-live="polite">{success}</p>}
       <TodoForm refreshTodos={refreshTodos} />
       {/* Pass refreshTodos prop to TodoList */}
       <TodoList todos={todos} refreshTodos={refreshTodos} />

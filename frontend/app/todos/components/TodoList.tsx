@@ -7,7 +7,7 @@ import axios from 'axios';
 type TodoStatus = 'in progress' | 'completed';
 
 interface Todo {
-  id: string; // Consistent data type
+  id: string; // Keep this consistent with your backend
   name: string;
   description: string;
   status: TodoStatus;
@@ -36,12 +36,13 @@ const TodoList: React.FC<TodoListProps> = ({ todos, refreshTodos }) => {
     const token = localStorage.getItem('token'); // Retrieve the token from local storage
     if (!token) {
       console.error('No token found. User might not be logged in.');
-      // Optionally, redirect the user to the login page or show an alert
+      alert('You need to be logged in to delete todos.'); // Notify the user
       return;
     }
 
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/todos/${id}`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''; // Ensure API URL is defined
+      await axios.delete(`${apiUrl}/api/todos/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`, // Set the authorization header
         },
@@ -49,15 +50,18 @@ const TodoList: React.FC<TodoListProps> = ({ todos, refreshTodos }) => {
       refreshTodos(); // Refresh the todo list after deletion
     } catch (error: any) {
       console.error('Failed to delete todo:', error);
-      if (error.response) {
+      if (axios.isAxiosError(error) && error.response) {
         console.error('Response data:', error.response.data);
-        // Optionally show user-friendly error message
         alert(`Error: ${error.response.data.message || 'Failed to delete todo.'}`);
-      }
-      if (error.response?.status === 401) {
-        // Handle unauthorized error (e.g., redirect to login)
-        console.error('Unauthorized access, please log in again.');
-        // Optionally redirect to login or clear token
+        
+        if (error.response.status === 401) {
+          // Handle unauthorized error (e.g., redirect to login)
+          alert('Session expired. Please log in again.');
+          localStorage.removeItem('token'); // Clear the token
+          window.location.href = '/login'; // Redirect to login
+        }
+      } else {
+        alert('An unexpected error occurred. Please try again later.');
       }
     }
   };
@@ -74,7 +78,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, refreshTodos }) => {
               <Link href={`/todos/${todo.id}`} passHref>
                 <div style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
                   <h4>{todo.name}</h4>
-                  <p>{todo.description}</p>
+                  <p>{todo.description || 'No description provided.'}</p>
                   <p style={{ color: getStatusColor(todo.status) }}>
                     Status: {todo.status}
                   </p>
