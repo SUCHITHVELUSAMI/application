@@ -1,20 +1,19 @@
-// src/todos/dto/create-todo.dto.ts
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString } from 'class-validator';
+import { TodoStatus } from '../todo.entity';
 
 export class CreateTodoDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Name must be a string' })
   name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  description: string;
+  @IsOptional()
+  @IsString({ message: 'Description must be a string' })
+  description?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  time: string; // Assuming time is sent as a string in the correct format
+  @IsOptional()
+  @IsDateString({}, { message: 'Time must be a valid date string' }) // Ensure time is a valid date string
+  time?: Date;
 
-  @IsString()
-  @IsNotEmpty()
-  status: 'in progress' | 'completed'; // Define valid statuses
+  @IsOptional() // Make status optional
+  @IsEnum(TodoStatus, { message: 'Status must be a valid TodoStatus' }) // Ensure status is a valid enum value
+  status?: TodoStatus;
 }

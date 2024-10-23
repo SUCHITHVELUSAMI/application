@@ -11,28 +11,28 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ unique: true }) // Ensure mobile number is unique
   mobile: string;
 
-  @Column()
+  @Column() // Use hashed passwords for security
   password: string;
 
-  @Column()
+  @Column() // Name of the user
   name: string;
 
-  @Column({ unique: false, nullable: true })
+  @Column({ nullable: true }) // Nullable email field
   email: string;
 
   @Column({
     type: 'enum',
     enum: Gender,
-    default: Gender.NOT_SPECIFIED,
+    default: Gender.NOT_SPECIFIED, // Default value if not provided
   })
   gender: Gender;
 
-  @Column()
+  @Column() // Country of the user
   country: string;
 
-  @Column('simple-array', { default: '' })
+  @Column('simple-array', { default: '' }) // Stores hobbies as a simple array
   hobbies: string[];
 }

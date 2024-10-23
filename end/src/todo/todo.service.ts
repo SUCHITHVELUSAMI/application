@@ -1,39 +1,77 @@
-// src/todos/todo.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CreateTodoDto } from './dto/create-todo.dto';
-import { Todo } from './todo.entity'; // Your Todo entity
+import { UpdateTodoDto } from './dto/update-todo.dto';
+import { Todo } from './todo.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TodosService {
-  constructor(private readonly logger: PinoLogger) {
+  constructor(
+    private readonly logger: PinoLogger,
+    @InjectRepository(Todo)
+    private readonly todoRepository: Repository<Todo>,
+  ) {
     this.logger.setContext(TodosService.name);
   }
 
-  private todos: Todo[] = []; // Replace this with a proper database connection in production
-
   async create(todoData: CreateTodoDto): Promise<Todo> {
-    const newTodo: Todo = {
-      id: Date.now(), // Simulating ID generation; replace with your database logic
-      name: todoData.name,
-      description: todoData.description,
-      time: new Date(todoData.time), // Ensure this is a Date object
-      status: todoData.status,
-    };
+    const newTodo = this.todoRepository.create(todoData);
+    try {
+      await this.todoRepository.save(newTodo);
+      this.logger.info(`Todo created with ID: ${newTodo.id}`, { todoData });
+      return newTodo;
+    } catch (error) {
+      this.logger.error('Failed to create a todo', error);
+      throw new InternalServerErrorException('Could not create todo');
+    }
+  }
 
-    this.logger.info('Creating a new todo');
-    this.todos.push(newTodo);
-    this.logger.info(`Todo created with ID: ${newTodo.id}`);
-    return newTodo;
+  async update(id: number, updateData: UpdateTodoDto): Promise<Todo> {
+    const todo = await this.findOne(id);
+    Object.assign(todo, updateData);
+    try {
+      return await this.todoRepository.save(todo);
+    } catch (error) {
+      this.logger.error('Failed to update todo', error);
+      throw new InternalServerErrorException('Could not update todo');
+    }
+  }
+
+  async findOne(id: number): Promise<Todo> {
+    const todo = await this.todoRepository.findOne({ where: { id } });
+    if (!todo) {
+      throw new NotFoundException('Todo not found');
+    }
+    return todo;
+  }
+
+  async remove(id: number): Promise<void> {
+    const todo = await this.findOne(id);
+    await this.todoRepository.remove(todo);
+    this.logger.info(`Todo with ID: ${id} has been removed`); // Logging removal for better traceability
   }
 
   async findAll(page: number): Promise<{ todos: Todo[]; totalPages: number }> {
-    const itemsPerPage = 10; // Example items per page
-    const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const paginatedTodos = this.todos.slice(start, end);
-    const totalPages = Math.ceil(this.todos.length / itemsPerPage);
+    if (page < 1) {
+      throw new BadRequestException('Page number must be greater than 0');
+    }
 
-    return { todos: paginatedTodos, totalPages };
+    const itemsPerPage = 10; // Example items per page
+    try {
+      const [todos, total] = await this.todoRepository.findAndCount({
+        take: itemsPerPage,
+        skip: (page - 1) * itemsPerPage,
+      });
+
+      const totalPages = Math.ceil(total / itemsPerPage);
+      this.logger.info(`Fetched ${todos.length} todos on page ${page}`, { page });
+
+      return { todos, totalPages };
+    } catch (error) {
+      this.logger.error('Failed to fetch todos', error);
+      throw new InternalServerErrorException('Could not fetch todos');
+    }
   }
 }

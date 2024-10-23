@@ -3,12 +3,12 @@ import Head from 'next/head';
 import Link from 'next/link';
 import './styles/globals.css'; // Correct path to CSS file
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const Layout: React.FC<{ children: React.ReactNode; title?: string; description?: string }> = ({ children, title, description }) => {
   return (
     <>
       <Head>
-        <title>Your App Title</title>
-        <meta name="description" content="Your app description" />
+        <title>{title || 'Your App Title'}</title> {/* Dynamic title */}
+        <meta name="description" content={description || 'Your app description'} /> {/* Dynamic description */}
       </Head>
       <html lang="en">
         <body>

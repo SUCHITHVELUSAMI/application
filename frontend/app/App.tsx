@@ -9,11 +9,13 @@ interface MyAppProps {
 }
 
 const MyApp: React.FC<MyAppProps> = ({ Component, pageProps }) => {
+  const { title, description } = pageProps; // Assuming you pass title and description in pageProps
+
   return (
     <>
       <Head>
-        <title>Your App Title</title>
-        <meta name="description" content="Your app description" />
+        <title>{title || 'Your App Title'}</title> {/* Use dynamic title if provided */}
+        <meta name="description" content={description || 'Your app description'} /> {/* Use dynamic description if provided */}
         <link rel="icon" href="/favicon.ico" /> {/* Optional: Add a favicon */}
       </Head>
       <ErrorBoundary>

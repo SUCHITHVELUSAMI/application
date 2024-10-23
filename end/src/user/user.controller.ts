@@ -1,43 +1,34 @@
-// /backend/src/user/user.service.ts
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, NotFoundException, Logger } from '@nestjs/common';
+import { UserService } from './user.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from './user.entity';
-import { RegisterDto } from '../auth/dto/register.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
 
-@Injectable()
-export class UserService {
-  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
+@UseGuards(JwtAuthGuard)
+@Controller('users') // Adjust as needed
+export class UserController {
+  private readonly logger = new Logger(UserController.name);
 
-  async create(registerDto: RegisterDto): Promise<User> {
-    // Check if the mobile number already exists
-    const existingUser = await this.userRepository.findOne({ where: { mobile: registerDto.mobile } });
-    if (existingUser) {
-      throw new ConflictException('Mobile number already exists');
+  constructor(private readonly userService: UserService) {}
+
+  @Get(':id')
+  async findById(@Param('id') id: string): Promise<User> {
+    const userId = Number(id); // Convert id to number
+
+    // Validate userId before calling the service
+    if (isNaN(userId)) {
+      this.logger.warn(`Invalid user ID: ${id}`); // Log the warning
+      throw new NotFoundException('Invalid user ID'); // If the id is not a number, throw an error
     }
 
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10); // Adjust the rounds as necessary
-
-    // Create a new user instance with hashed password
-    const newUser = this.userRepository.create({
-      ...registerDto,
-      password: hashedPassword, // Use the hashed password
-    });
-
-    // Save the new user to the database
-    return await this.userRepository.save(newUser);
-  }
-
-  async validateUser(mobile: string, password: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ where: { mobile } }); // Fixed the syntax error
+    this.logger.log(`Fetching user with ID: ${userId}`); // Log the request
+    const user = await this.userService.findById(userId); // Call with the converted id
+    
     if (!user) {
-      throw new NotFoundException('User not found');
+      this.logger.warn(`User with ID ${userId} not found`); // Log if user not found
+      throw new NotFoundException(`User with ID ${userId} not found`);
     }
-
-    // Compare the hashed password with the provided password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    return isPasswordValid ? user : null; // Return user if password is valid
+    
+    this.logger.log(`User with ID ${userId} fetched successfully`); // Log success
+    return user; // Return the user found
   }
 }

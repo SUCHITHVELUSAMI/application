@@ -1,26 +1,22 @@
-// /backend/src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserModule } from '../user/user.module';
+import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { UserModule } from '../user/user.module';
 import { JwtStrategy } from './jwt.strategy';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'your_jwt_secret'),
-        signOptions: { expiresIn: '60s' },
-      }),
+    PassportModule, // Enables Passport.js for authentication
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'your_jwt_secret', // Ensure this is set in production
+      signOptions: { expiresIn: '60m' }, // Customize expiration time as needed
     }),
   ],
-  providers: [AuthService, JwtStrategy], // Removed Logger from here
-  controllers: [AuthController],
+  controllers: [AuthController], // Registering the AuthController
+  providers: [AuthService, JwtStrategy], // Registering AuthService and JwtStrategy
+  exports: [AuthService, JwtModule], // Exporting AuthService and JwtModule for use in other modules
 })
 export class AuthModule {}

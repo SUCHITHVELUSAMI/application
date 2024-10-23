@@ -1,10 +1,10 @@
-// /backend/src/app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { validateConfig } from './config.validation'; // Adjusted import
+import { TodosModule } from './todo/todo.module'; // Import your Todos module
+import { validateConfig } from './config.validation'; // Ensure this file exists
 
 @Module({
   imports: [
@@ -24,6 +24,7 @@ import { validateConfig } from './config.validation'; // Adjusted import
     }),
     UserModule,
     AuthModule,
+    TodosModule, // Register the Todos module
   ],
 })
 export class AppModule {}

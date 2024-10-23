@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import './styles/globals.css'; // Assuming you create a CSS module for specific styling
+import './styles/globals.css'; // Ensure you have appropriate styles defined
 
 const Home: React.FC = () => {
   return (
@@ -9,10 +9,14 @@ const Home: React.FC = () => {
       <p>This application helps you manage your tasks efficiently. Please register or log in to get started!</p>
       <div className="button-group">
         <Link href="/register" passHref>
-          <button className="action-button">Register</button>
+          <button className="action-button" aria-label="Register for a new account">
+            Register
+          </button>
         </Link>
         <Link href="/login" passHref>
-          <button className="action-button">Login</button>
+          <button className="action-button" aria-label="Login to your account">
+            Login
+          </button>
         </Link>
       </div>
     </div>

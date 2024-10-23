@@ -1,34 +1,43 @@
-import { Controller, Post, Body, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { User } from '../user/user.entity'; // Import User for type annotation
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
-  private readonly logger = new Logger(AuthController.name); // Create Logger instance
+  private readonly logger = new Logger(AuthController.name);
 
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() registerDto: RegisterDto): Promise<User> {
+  async register(@Body() registerDto: RegisterDto) {
+    this.logger.log(`New user registration attempt for mobile: ${registerDto.mobile}`);
     try {
-      this.logger.log('Registering user'); // Log the registration attempt
-      return await this.authService.register(registerDto);
+      const user = await this.authService.register(registerDto);
+      this.logger.log(`User registered successfully with mobile: ${registerDto.mobile}`);
+      return user;
     } catch (error) {
-      this.logger.error('Registration failed', error.stack); // Log the error
-      throw new HttpException(error.response || 'Registration failed', error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+      this.logger.error('Registration failed', error.message);
+      throw error; // Pass the error for proper handling
     }
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<{ accessToken: string }> {
+  async login(@Body() loginDto: LoginDto) {
+    this.logger.log(`User login attempt for mobile: ${loginDto.mobile}`);
     try {
-      this.logger.log('User login attempt'); // Log the login attempt
-      return await this.authService.login(loginDto);
+      const accessToken = await this.authService.login(loginDto);
+      this.logger.log(`Login successful for mobile: ${loginDto.mobile}`);
+      return { accessToken };
     } catch (error) {
-      this.logger.error('Login failed', error.stack); // Log the error
-      throw new HttpException(error.response || 'Login failed', error.status || HttpStatus.UNAUTHORIZED);
+      this.logger.error('Login failed', error.message);
+      throw new UnauthorizedException('Invalid mobile number or password');
     }
   }
 }

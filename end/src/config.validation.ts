@@ -1,4 +1,3 @@
-// src/config.validation.ts
 import * as Joi from 'joi';
 
 export const configValidationSchema = Joi.object({
@@ -18,5 +17,5 @@ export const validateConfig = (config: Record<string, any>) => {
   if (error) {
     throw new Error(`Configuration validation error: ${error.message}`);
   }
-  return config; // Return the validated configuration
+  return config;
 };

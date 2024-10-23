@@ -2,7 +2,7 @@ import React from 'react';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
-  errorMessage?: string; // Optional prop for a custom error message
+  errorMessage?: React.ReactNode; // Allow custom messages as React nodes
 }
 
 interface ErrorBoundaryState {
@@ -15,20 +15,29 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+  static getDerivedStateFromError(): Partial<ErrorBoundaryState> {
     return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught in error boundary:', error, errorInfo);
+    // Optionally, log the error to an external service here
+    // e.g., logErrorToMyService(error, errorInfo);
   }
+
+  handleResetError = () => {
+    this.setState({ hasError: false });
+    // Optionally reset relevant state in child components if needed
+  };
 
   render() {
     if (this.state.hasError) {
       return (
-        <div>
-          <h1 className="error-boundary">{this.props.errorMessage || 'Something went wrong.'}</h1>
-          <button onClick={() => this.setState({ hasError: false })}>Try Again</button>
+        <div className="error-boundary" style={{ textAlign: 'center', padding: '20px', color: 'red' }}>
+          <h1 role="alert">{this.props.errorMessage || 'Something went wrong.'}</h1>
+          <button onClick={this.handleResetError} aria-label="Try again" style={{ padding: '10px 20px', cursor: 'pointer' }}>
+            Try Again
+          </button>
         </div>
       );
     }
